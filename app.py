@@ -69,9 +69,6 @@ def education():
 @app.route("/resume/skill", methods=["GET", "POST"])
 @app.route('/resume/skill/<int:skill_id>', methods=['DELETE'])
 def skill(skill_id = None):
-    '''
-    Handles Skill requests
-    '''
     if request.method == 'GET':
         return jsonify([skill.__dict__ for skill in data["skill"]]), 200
 
@@ -110,9 +107,6 @@ def skill(skill_id = None):
       
 @app.route('/resume/skill/<int:skill_id>', methods=['GET'])
 def get_skill(skill_id):
-    '''
-    Get a specific skill
-    '''
 
     if request.method == "GET":
         try:
