@@ -2,7 +2,8 @@
 Flask Application
 '''
 from flask import Flask, jsonify, request
-from models import Experience, Education, Skill
+
+from models import Education, Experience, Skill
 
 app = Flask(__name__)
 
@@ -61,26 +62,26 @@ def education():
         return jsonify({})
 
     if request.method == "POST":
-        input = request.get_json()
+        body = request.get_json()
         payload = {
-            "course": input.get("course"),
-            "school": input.get("school"),
-            "start_date": input.get("start_date"),
-            "end_date": input.get("end_date"),
-            "grade": input.get("grade"),
-            "logo": input.get("logo"),
+            "course": body.get("course"),
+            "school": body.get("school"),
+            "start_date": body.get("start_date"),
+            "end_date": body.get("end_date"),
+            "grade": body.get("grade"),
+            "logo": body.get("logo"),
         }
 
-        for key in payload.keys():
-            if payload[key] == None:
+        for key, value in payload.items():
+            if value is None:
                 message = f"{key} must not be empty"
                 return jsonify(
                     {
                         "message": message,
                     }
-                )
+                ), 400
 
-        newRecord = Education(
+        new_record = Education(
             payload[ "course" ],
             payload["school"],
             payload["start_date"],
@@ -89,16 +90,16 @@ def education():
             payload["logo"],
         )
 
-        existingEducationRecords = data["education"]
-        lengthOfExisitingRecords = len(existingEducationRecords)
-        existingEducationRecords.append(newRecord)
+        existing_education_records = data["education"]
+        length_of_exisiting_records = len(existing_education_records)
+        existing_education_records.append(new_record)
 
         return jsonify(
             {
                 "message": "education added successfully",
-                "data": lengthOfExisitingRecords,
+                "data": length_of_exisiting_records,
             }
-        )
+        ),201
 
     return jsonify({})
 
