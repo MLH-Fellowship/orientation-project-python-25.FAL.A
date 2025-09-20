@@ -2,7 +2,8 @@
 Flask Application
 '''
 from flask import Flask, jsonify, request
-from models import Experience, Education, Skill
+
+from models import Education, Experience, Skill
 
 app = Flask(__name__)
 
@@ -58,7 +59,13 @@ def education():
     Handles education requests
     '''
     if request.method == 'GET':
-        return jsonify({})
+        existing_education_records = data["education"]
+        return jsonify(
+            {
+                "message": "list of education records returned successfully",
+                "data": existing_education_records,
+            }
+        ), 200
 
     if request.method == 'POST':
         return jsonify({})
