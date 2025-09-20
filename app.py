@@ -60,8 +60,45 @@ def education():
     if request.method == 'GET':
         return jsonify({})
 
-    if request.method == 'POST':
-        return jsonify({})
+    if request.method == "POST":
+        input = request.get_json()
+        payload = {
+            "course": input.get("course"),
+            "school": input.get("school"),
+            "start_date": input.get("start_date"),
+            "end_date": input.get("end_date"),
+            "grade": input.get("grade"),
+            "logo": input.get("logo"),
+        }
+
+        for key in payload.keys():
+            if payload[key] == None:
+                message = f"{key} must not be empty"
+                return jsonify(
+                    {
+                        "message": message,
+                    }
+                )
+
+        newRecord = Education(
+            payload[ "course" ],
+            payload["school"],
+            payload["start_date"],
+            payload["end_date"],
+            payload["grade"],
+            payload["logo"],
+        )
+
+        existingEducationRecords = data["education"]
+        lengthOfExisitingRecords = len(existingEducationRecords)
+        existingEducationRecords.append(newRecord)
+
+        return jsonify(
+            {
+                "message": "education added successfully",
+                "data": lengthOfExisitingRecords,
+            }
+        )
 
     return jsonify({})
 
