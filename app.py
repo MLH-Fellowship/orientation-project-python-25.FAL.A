@@ -66,6 +66,28 @@ def education():
     return jsonify({})
 
 
+@app.route("/resume/education/<int:education_id>", methods=["GET"])
+def get_education(education_id):
+    '''
+    Handles retrieving specific education 
+    '''
+    existing_education_records = data["education"]
+    if education_id > len(existing_education_records) - 1  :
+        return jsonify(
+            {
+                "message": "education does not exist",
+            }
+        )
+
+    record  = existing_education_records[education_id]
+    return jsonify(
+        {
+            "message": "education record returned successfully",
+            "data": record,
+        }
+    )
+
+
 @app.route('/resume/skill', methods=['GET', 'POST'])
 def skill():
     '''
