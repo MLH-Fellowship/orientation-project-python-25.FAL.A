@@ -66,13 +66,8 @@ def education():
     return jsonify({})
 
 
-@app.route("/resume/skill", methods=["GET", "POST"])
-@app.route('/resume/skill/<int:skill_id>', methods=['DELETE'])
-def skill(skill_id = None):
-    if request.method == 'GET':
-        return jsonify([skill.__dict__ for skill in data["skill"]]), 200
-
-    if request.method == 'POST':
+@app.route("/resume/skill", methods=["POST"])
+def skill():
         json_data = request.json
         try:
             name = json_data["name"]
@@ -92,7 +87,16 @@ def skill(skill_id = None):
 
         except TypeError as e:
             return jsonify({"error": str(e)}), 400
-    if request.method == "DELETE":
+        
+@app.route('/resume/skill/<int:skill_id>', methods=['GET'])
+def get_skill(skill_id):
+        try:
+            return jsonify(data["skill"][skill_id].__dict__)
+        except IndexError:
+            return jsonify({"error": "Skill not found"}), 404
+        
+@app.route('/resume/skill/<int:skill_id>', methods=['DELETE'])
+def del_skill(skill_id):
         try:
             if skill_id is None or skill_id < 0 or skill_id >= len(data["skill"]):
                 return jsonify({"message": "Resource doesn't exist"}), 404
@@ -103,14 +107,9 @@ def skill(skill_id = None):
         except Exception as e:      
             return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
-    return jsonify({})
-      
-@app.route('/resume/skill/<int:skill_id>', methods=['GET'])
-def get_skill(skill_id):
-
-    if request.method == "GET":
+@app.route('/resume/skill', methods=['GET'])
+def get_skills():
         try:
-            return jsonify(data["skill"][skill_id].__dict__)
-        except IndexError:
-            return jsonify({"error": "Skill not found"}), 404
-
+            return jsonify([skill.__dict__ for skill in data["skill"]]), 200
+        except Exception as e:
+            return jsonify({"error": f"An error occurred: {str(e)}"}), 500
