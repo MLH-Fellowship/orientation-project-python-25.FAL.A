@@ -2,9 +2,11 @@
 Flask Application
 """
 
+from dataclasses import asdict
+
 from flask import Flask, jsonify, request
 from models import Experience, Education, Skill
-from dataclasses import asdict
+
 
 app = Flask(__name__)
 
