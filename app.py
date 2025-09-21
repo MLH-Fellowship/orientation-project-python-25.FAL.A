@@ -4,12 +4,14 @@ Flask Application
 
 from flask import Flask, jsonify, request
 from models import Experience, Education, Skill
+from dataclasses import asdict
 
 app = Flask(__name__)
 
 data = {
     "experience": [
         Experience(
+            1,
             "Software Developer",
             "A Cool Company",
             "October 2022",
@@ -46,7 +48,9 @@ def experience():
     Handle experience requests
     """
     if request.method == "GET":
-        return jsonify()
+        data_experiences = data["experience"]
+        data_experiences_response = [asdict(exp) for exp in data_experiences]
+        return jsonify(data_experiences_response), 200
 
     if request.method == "POST":
         user_input = request.get_json()
@@ -63,12 +67,11 @@ def experience():
             return jsonify({"error": "Missing required fields"}), 400
 
         # Create a new Experience instance
+        # Using the length of the of the experience list and the index of the new experience
+        user_input["id"] = len(data["experience"]) + 1
         new_experience = Experience(**user_input)
         data["experience"].append(new_experience)
-
-        # Return the index of the newly added experience
-        new_index = len(data["experience"]) - 1
-        return jsonify({"message": "Experience added", "index": new_index}), 201
+        return jsonify({"index": new_experience.id - 1}), 201
 
     return jsonify({})
 

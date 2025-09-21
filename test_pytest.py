@@ -20,6 +20,7 @@ def test_experience():
     Check that it returns the new experience in that list
     '''
     example_experience = {
+        "id": 2,
         "title": "Software Developer",
         "company": "A Cooler Company",
         "start_date": "October 2022",
@@ -29,7 +30,7 @@ def test_experience():
     }
 
     item_id = app.test_client().post('/resume/experience',
-                                     json=example_experience).json['id']
+                                     json=example_experience).json['index']
     response = app.test_client().get('/resume/experience')
     assert response.json[item_id] == example_experience
 
