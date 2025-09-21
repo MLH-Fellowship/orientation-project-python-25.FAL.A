@@ -1,6 +1,7 @@
 '''
 Flask Application
 '''
+from dataclasses import asdict
 from flask import Flask, jsonify, request
 from models import Experience, Education, Skill
 
@@ -50,6 +51,17 @@ def experience():
     if request.method == 'POST':
         return jsonify({})
 
+    return jsonify({})
+
+@app.route('/resume/experience/<int:id>', methods=['GET'])
+def get_single_experience(id):
+    if request.method == 'GET':
+        experiences = data["experience"]
+        try:
+            experience = experiences[id]
+            return jsonify(asdict(experience)), 200
+        except IndexError:
+            return jsonify({"error": "No experience found with this index"}), 404
     return jsonify({})
 
 @app.route('/resume/education', methods=['GET', 'POST'])
