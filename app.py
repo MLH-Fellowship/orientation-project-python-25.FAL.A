@@ -66,15 +66,24 @@ def education():
     return jsonify({})
 
 
-@app.route('/resume/skill', methods=['GET', 'POST'])
+@app.route("/resume/skill", methods=["POST"])
 def skill():
-    '''
-    Handles Skill requests
-    '''
-    if request.method == 'GET':
-        return jsonify({})
+        json_data = request.json
+        try:
+            name = json_data["name"]
+            proficiency = json_data["proficiency"]
+            logo = json_data["logo"]
 
-    if request.method == 'POST':
-        return jsonify({})
+            new_skill = Skill(name, proficiency, logo)
 
-    return jsonify({})
+            data["skill"].append(new_skill)
+
+            return jsonify(
+                {"id": len(data["skill"]) - 1}
+            ), 201
+
+        except KeyError:
+            return jsonify({"error": "Invalid request"}), 400
+
+        except TypeError as e:
+            return jsonify({"error": str(e)}), 400
