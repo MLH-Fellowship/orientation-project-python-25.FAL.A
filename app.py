@@ -2,7 +2,8 @@
 Flask Application
 '''
 from flask import Flask, jsonify, request
-from models import Experience, Education, Skill
+
+from models import Education, Experience, Skill
 
 app = Flask(__name__)
 
@@ -77,7 +78,7 @@ def get_education(education_id):
             {
                 "message": "education does not exist",
             }
-        )
+        ), 404
 
     record  = existing_education_records[education_id]
     return jsonify(
@@ -85,7 +86,7 @@ def get_education(education_id):
             "message": "education record returned successfully",
             "data": record,
         }
-    )
+    ), 200
 
 
 @app.route('/resume/skill', methods=['GET', 'POST'])
