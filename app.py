@@ -4,7 +4,8 @@ Flask Application
 
 from dataclasses import asdict
 from flask import Flask, jsonify, request
-from models import Experience, Education, Skill
+
+from models import Education, Experience, Skill
 
 app = Flask(__name__)
 
@@ -78,8 +79,47 @@ def education():
         return jsonify({})
 
     if request.method == "POST":
-        return jsonify({})
 
+        body = request.get_json()
+        payload = {
+            "course": body.get("course"),
+            "school": body.get("school"),
+            "start_date": body.get("start_date"),
+            "end_date": body.get("end_date"),
+            "grade": body.get("grade"),
+            "logo": body.get("logo"),
+        }
+
+        for key, value in payload.items():
+            if value is None:
+                message = f"{key} must not be empty"
+                return jsonify(
+                    {
+                        "message": message,
+                    }
+                ), 400
+
+        new_record = Education(
+            payload[ "course" ],
+            payload["school"],
+            payload["start_date"],
+            payload["end_date"],
+            payload["grade"],
+            payload["logo"],
+        )
+
+        existing_education_records = data["education"]
+        length_of_exisiting_records = len(existing_education_records)
+        existing_education_records.append(new_record)
+
+        return jsonify(
+            {
+                "message": "education added successfully",
+                "data": length_of_exisiting_records,
+            }
+        ),201
+
+  
     return jsonify({})
 
 
