@@ -74,9 +74,17 @@ def get_single_experience(pk):
 def education():
     """
     Handles education requests
-    """
-    if request.method == "GET":
-        return jsonify({})
+
+    '''
+    if request.method == 'GET':
+        existing_education_records = data["education"]
+        return jsonify(
+            {
+                "message": "list of education records returned successfully",
+                "data": existing_education_records,
+            }
+        ), 200
+
 
     if request.method == "POST":
 
