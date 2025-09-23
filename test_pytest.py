@@ -34,6 +34,7 @@ def test_experience():
         app.test_client()
         .post("/resume/experience", json=example_experience)
         .json["index"]
+
     )
     response = app.test_client().get("/resume/experience")
     assert response.json[item_id] == example_experience
@@ -71,9 +72,28 @@ def test_skill():
         "name": "JavaScript",
         "proficiency": "2-4 years",
         "logo": "example-logo.png",
+
     }
 
     item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
 
     response = app.test_client().get("/resume/skill")
     assert response.json[item_id] == example_skill
+
+
+def test_get_skill_by_id():
+    example_skill = {
+        "name": "Blowing Bubbles an Fighting Crime",
+        "proficiency": "5+ years",
+        "logo": "some-logo.png"
+
+    }
+
+    item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
+
+
+    response = app.test_client().get(f'/resume/skill/{item_id}')
+    data = response.json
+
+    assert response.status_code == 200
+    assert data == example_skill
