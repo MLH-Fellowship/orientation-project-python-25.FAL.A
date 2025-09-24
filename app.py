@@ -160,7 +160,7 @@ def get_skill(skill_id):
     except TypeError as e:
         return jsonify({"error": str(e)}), 400
 
-@app.route('/resume/skill/<int:skill_id>', method=['DELETE'])
+@app.route('/resume/skill/<int:skill_id>', methods=['DELETE'])
 def delete_skill(skill_id):
     try:
         if skill_id is None or skill_id < 0 or skill_id >= len(data["skill"]):
