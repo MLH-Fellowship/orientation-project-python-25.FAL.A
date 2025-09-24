@@ -72,10 +72,7 @@ def get_single_experience(pk):
 
 @app.route("/resume/education", methods=["GET", "POST"])
 def education():
-    """
-    Handles education requests
 
-    '''
     if request.method == 'GET':
         existing_education_records = data["education"]
         return jsonify(
@@ -162,3 +159,16 @@ def get_skill(skill_id):
         return jsonify({"error": "Skill not found"}), 404
     except TypeError as e:
         return jsonify({"error": str(e)}), 400
+
+@app.route('/resume/skill/<int:skill_id>', methods=['DELETE'])
+def delete_skill(skill_id):
+    try:
+        if skill_id is None or skill_id < 0 or skill_id >= len(data["skill"]):
+            return jsonify({"message": "Skill doesn't exist"}), 404
+        else:   
+            del data['skill'][skill_id]
+            return jsonify({"message": "Skill Successfully Deleted"}), 200
+
+    except Exception as e:      
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+

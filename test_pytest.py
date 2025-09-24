@@ -72,8 +72,11 @@ def test_skill():
 
     item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
 
-    response = app.test_client().get("/resume/skill")
-    assert response.json[item_id] == example_skill
+    response = app.test_client().get(f'/resume/skill/{item_id}')
+    data = response.json
+
+    assert response.status_code == 200
+    assert data == example_skill
 
 
 def test_get_skill_by_id():
@@ -91,3 +94,21 @@ def test_get_skill_by_id():
 
     assert response.status_code == 200
     assert data == example_skill
+
+def test_delete_skill_by_id():
+    example_skill = {
+        "name": "Laziness",
+        "proficiency": "All my life",
+        "logo": "_.png"
+    }
+
+    client = app.test_client()
+
+    post_response = client.post('/resume/skill', json=example_skill)
+    item_id = post_response.json['id']
+
+    delete_response = client.delete(f'/resume/skill/{item_id}')
+    assert delete_response.status_code == 200
+
+    get_response = client.get(f'/resume/skill/{item_id}')
+    assert get_response.status_code == 404
