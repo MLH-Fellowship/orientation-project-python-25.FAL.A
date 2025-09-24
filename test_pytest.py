@@ -21,6 +21,7 @@ def test_experience():
     Check that it returns the new experience in that list
     """
     example_experience = {
+        "id": 2,
         "title": "Software Developer",
         "company": "A Cooler Company",
         "start_date": "October 2022",
@@ -30,7 +31,10 @@ def test_experience():
     }
 
     item_id = (
-        app.test_client().post("/resume/experience", json=example_experience).json["id"]
+        app.test_client()
+        .post("/resume/experience", json=example_experience)
+        .json["index"]
+
     )
     response = app.test_client().get("/resume/experience")
     assert response.json[item_id] == example_experience
@@ -68,6 +72,7 @@ def test_skill():
         "name": "JavaScript",
         "proficiency": "2-4 years",
         "logo": "example-logo.png",
+
     }
 
     item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
@@ -81,10 +86,11 @@ def test_get_skill_by_id():
         "name": "Blowing Bubbles an Fighting Crime",
         "proficiency": "5+ years",
         "logo": "some-logo.png"
+
     }
 
-    item_id = app.test_client().post('/resume/skill',
-                                     json=example_skill).json['id']
+    item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
+
 
     response = app.test_client().get(f'/resume/skill/{item_id}')
     data = response.json

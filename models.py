@@ -12,6 +12,7 @@ class Experience:
     '''
     Experience Class
     '''
+    id: int
     title: str
     company: str
     start_date: str
