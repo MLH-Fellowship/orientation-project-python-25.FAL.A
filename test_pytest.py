@@ -72,8 +72,11 @@ def test_skill():
 
     item_id = app.test_client().post("/resume/skill", json=example_skill).json["id"]
 
-    response = app.test_client().get("/resume/skill")
-    assert response.json[item_id] == example_skill
+    response = app.test_client().get(f'/resume/skill/{item_id}')
+    data = response.json
+
+    assert response.status_code == 200
+    assert data == example_skill
 
 
 def test_get_skill_by_id():
