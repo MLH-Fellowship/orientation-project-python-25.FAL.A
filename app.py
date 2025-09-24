@@ -3,15 +3,18 @@ Flask Application
 """
 
 from dataclasses import asdict
+
 from flask import Flask, jsonify, request
 
 from models import Education, Experience, Skill
+
 
 app = Flask(__name__)
 
 data = {
     "experience": [
         Experience(
+            1,
             "Software Developer",
             "A Cool Company",
             "October 2022",
@@ -48,10 +51,36 @@ def experience():
     Handle experience requests
     """
     if request.method == "GET":
+        data_experiences = data["experience"]
+        data_experiences_response = [asdict(exp) for exp in data_experiences]
+        return jsonify(data_experiences_response), 200
+
+    if request.method == "POST":
+        user_input = request.get_json()
+        required_fields = [
+            "title",
+            "company",
+            "start_date",
+            "end_date",
+            "description",
+            "logo",
+        ]
+        # Validating User Input
+        if not all(field in user_input for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Create a new Experience instance
+        # Using the length of the of the experience list and the index of the new experience
+        user_input["id"] = len(data["experience"]) + 1
+        new_experience = Experience(**user_input)
+        data["experience"].append(new_experience)
+        return jsonify({"index": new_experience.id - 1}), 201
+
         return jsonify()
 
     if request.method == "POST":
         return jsonify({})
+
 
     return jsonify({})
 
@@ -70,6 +99,7 @@ def get_single_experience(pk):
     return jsonify({})
 
 
+
 @app.route("/resume/education", methods=["GET", "POST"])
 def education():
     """
@@ -81,6 +111,60 @@ def education():
     if request.method == "POST":
         return jsonify({})
 
+
+    if request.method == 'GET':
+        existing_education_records = data["education"]
+        return jsonify(
+            {
+                "message": "list of education records returned successfully",
+                "data": existing_education_records,
+            }
+        ), 200
+
+
+
+    if request.method == "POST":
+
+        body = request.get_json()
+        payload = {
+            "course": body.get("course"),
+            "school": body.get("school"),
+            "start_date": body.get("start_date"),
+            "end_date": body.get("end_date"),
+            "grade": body.get("grade"),
+            "logo": body.get("logo"),
+        }
+
+        for key, value in payload.items():
+            if value is None:
+                message = f"{key} must not be empty"
+                return jsonify(
+                    {
+                        "message": message,
+                    }
+                ), 400
+
+        new_record = Education(
+            payload[ "course" ],
+            payload["school"],
+            payload["start_date"],
+            payload["end_date"],
+            payload["grade"],
+            payload["logo"],
+        )
+
+        existing_education_records = data["education"]
+        length_of_exisiting_records = len(existing_education_records)
+        existing_education_records.append(new_record)
+
+        return jsonify(
+            {
+                "message": "education added successfully",
+                "data": length_of_exisiting_records,
+            }
+        ),201
+
+  
     return jsonify({})
 
 
@@ -117,6 +201,7 @@ def skill():
 
             new_skill = Skill(name, proficiency, logo)
 
+
             data["skill"].append(new_skill)
 
             return jsonify(
@@ -128,3 +213,13 @@ def skill():
 
         except TypeError as e:
             return jsonify({"error": str(e)}), 400
+        
+@app.route('/resume/skill/<int:skill_id>', methods=['GET'])
+def get_skill(skill_id):
+    try:
+        skill = data["skill"][skill_id]
+        return jsonify(skill.__dict__)
+    except IndexError:
+        return jsonify({"error": "Skill not found"}), 404
+    except TypeError as e:
+        return jsonify({"error": str(e)}), 400
