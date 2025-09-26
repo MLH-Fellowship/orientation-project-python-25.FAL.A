@@ -8,6 +8,8 @@ from flask import Flask, jsonify, request
 
 from models import Education, Experience, Skill
 
+from helper import validate_fields
+
 
 app = Flask(__name__)
 
@@ -65,9 +67,9 @@ def experience():
             "description",
             "logo",
         ]
-        # Validating User Input
-        if not all(field in user_input for field in required_fields):
-            return jsonify({"error": "Missing required fields"}), 400
+        is_valid, missing = validate_fields(user_input, required_fields)
+        if not is_valid:
+            return jsonify({"error": f"Missing required field: {missing}"}), 400
 
         # Create a new Experience instance
         # Using the length of the of the experience list and the index of the new experience
@@ -80,7 +82,6 @@ def experience():
 
     if request.method == "POST":
         return jsonify({})
-
 
     return jsonify({})
 
@@ -99,122 +100,114 @@ def get_single_experience(pk):
     return jsonify({})
 
 
-
 @app.route("/resume/education", methods=["GET", "POST"])
 def education():
     """
     Handles education requests
     """
     if request.method == "GET":
-        return jsonify({})
-
-    if request.method == "POST":
-        return jsonify({})
-
-
-    if request.method == 'GET':
         existing_education_records = data["education"]
-        return jsonify(
-            {
-                "message": "list of education records returned successfully",
-                "data": existing_education_records,
-            }
-        ), 200
-
-
+        return (
+            jsonify(
+                {
+                    "message": "list of education records returned successfully",
+                    "data": existing_education_records,
+                }
+            ),
+            200,
+        )
 
     if request.method == "POST":
-
         body = request.get_json()
-        payload = {
-            "course": body.get("course"),
-            "school": body.get("school"),
-            "start_date": body.get("start_date"),
-            "end_date": body.get("end_date"),
-            "grade": body.get("grade"),
-            "logo": body.get("logo"),
-        }
-
-        for key, value in payload.items():
-            if value is None:
-                message = f"{key} must not be empty"
-                return jsonify(
-                    {
-                        "message": message,
-                    }
-                ), 400
+        required_fields = [
+            "course",
+            "school",
+            "start_date",
+            "end_date",
+            "grade",
+            "logo",
+        ]
+        is_valid, missing = validate_fields(body, required_fields)
+        if not is_valid:
+            return (
+                jsonify({"message": f"{missing} must not be empty"}),
+                400,
+            )
 
         new_record = Education(
-            payload[ "course" ],
-            payload["school"],
-            payload["start_date"],
-            payload["end_date"],
-            payload["grade"],
-            payload["logo"],
+            body["course"],
+            body["school"],
+            body["start_date"],
+            body["end_date"],
+            body["grade"],
+            body["logo"],
         )
 
         existing_education_records = data["education"]
         length_of_exisiting_records = len(existing_education_records)
         existing_education_records.append(new_record)
 
-        return jsonify(
-            {
-                "message": "education added successfully",
-                "data": length_of_exisiting_records,
-            }
-        ),201
+        return (
+            jsonify(
+                {
+                    "message": "education added successfully",
+                    "data": length_of_exisiting_records,
+                }
+            ),
+            201,
+        )
 
-  
     return jsonify({})
 
 
 @app.route("/resume/education/<int:education_id>", methods=["GET"])
 def get_education(education_id):
-    '''
-    Handles retrieving specific education 
-    '''
+    """
+    Handles retrieving specific education
+    """
     existing_education_records = data["education"]
-    if education_id > len(existing_education_records) - 1  :
-        return jsonify(
+    if education_id > len(existing_education_records) - 1:
+        return (
+            jsonify(
+                {
+                    "message": "education does not exist",
+                }
+            ),
+            404,
+        )
+
+    record = existing_education_records[education_id]
+    return (
+        jsonify(
             {
-                "message": "education does not exist",
+                "message": "education record returned successfully",
+                "data": record,
             }
-        ), 404
-
-    record  = existing_education_records[education_id]
-    return jsonify(
-        {
-            "message": "education record returned successfully",
-            "data": record,
-        }
-    ), 200
-
+        ),
+        200,
+    )
 
 
 @app.route("/resume/skill", methods=["POST"])
 def skill():
-        json_data = request.json
-        try:
-            name = json_data["name"]
-            proficiency = json_data["proficiency"]
-            logo = json_data["logo"]
+    json_data = request.get_json()
+    required_fields = ["name", "proficiency", "logo"]
+    is_valid, missing = validate_fields(json_data, required_fields)
+    if not is_valid:
+        return jsonify({"error": f"Missing required field: {missing}"}), 400
 
-            new_skill = Skill(name, proficiency, logo)
+    try:
+        new_skill = Skill(
+            json_data["name"], json_data["proficiency"], json_data["logo"]
+        )
+        data["skill"].append(new_skill)
+        return jsonify({"id": len(data["skill"]) - 1}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
-            data["skill"].append(new_skill)
-
-            return jsonify(
-                {"id": len(data["skill"]) - 1}
-            ), 201
-
-        except KeyError:
-            return jsonify({"error": "Invalid request"}), 400
-
-        except TypeError as e:
-            return jsonify({"error": str(e)}), 400
-        
-@app.route('/resume/skill/<int:skill_id>', methods=['GET'])
+@app.route("/resume/skill/<int:skill_id>", methods=["GET"])
 def get_skill(skill_id):
     try:
         skill = data["skill"][skill_id]
