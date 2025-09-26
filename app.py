@@ -2,6 +2,14 @@
 Flask Application
 """
 
+import openai
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 from dataclasses import asdict
 
 from flask import Flask, jsonify, request
@@ -216,3 +224,36 @@ def get_skill(skill_id):
         return jsonify({"error": "Skill not found"}), 404
     except TypeError as e:
         return jsonify({"error": str(e)}), 400
+
+
+@app.route("/resume/suggest-description", methods=["POST"])
+def suggest_description():
+    """
+    Uses OpenAI API to suggest improvements for a description field.
+    Expects JSON: { "type": "experience"|"education", "description": "..." }
+    """
+    data_in = request.get_json()
+    desc = data_in.get("description", "")
+    section_type = data_in.get("type", "experience")
+
+    if not desc:
+        return jsonify({"error": "Description is required"}), 400
+
+    prompt = (
+        f"Suggest a more professional and concise version of this {section_type} description:\n{desc}"
+    )
+
+    try:
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant for resume writing"},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=100,
+        )
+        suggestion = response.choices[0].message.content.strip()
+        return jsonify({"suggestion": suggestion}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
