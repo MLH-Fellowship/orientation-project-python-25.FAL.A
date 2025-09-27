@@ -3,6 +3,7 @@ Flask Application
 """
 
 from dataclasses import asdict
+import re
 
 from flask import Flask, jsonify, request
 
@@ -37,6 +38,9 @@ data = {
     ],
     "skill": [Skill("Python", "1-2 Years", "example-logo.png")],
 }
+
+# store personal info
+personal_info = {}
 
 
 @app.route("/test")
@@ -216,3 +220,59 @@ def get_skill(skill_id):
         return jsonify({"error": "Skill not found"}), 404
     except TypeError as e:
         return jsonify({"error": str(e)}), 400
+
+
+def validate_phone(phone):
+    # phone validation
+    return bool(re.match(r"^\+\d{10,}$", phone))
+
+
+def validate_email(email):
+    # email validation
+    return bool(re.match(r"^[^@]+@[^@]+\.[^@]+$", email))
+
+
+@app.route("/resume/personal", methods=["POST", "PUT"])
+def personal():
+    """
+    Add or update personal information
+    """
+    data_in = request.get_json()
+    required_fields = ["name", "phone", "email"]
+    is_valid, missing = validate_fields(data_in, required_fields)
+    if not is_valid:
+        return jsonify({"error": f"Missing required field: {missing}"}), 400
+
+    if not validate_phone(data_in["phone"]):
+        return (
+            jsonify(
+                {
+                    "error": "Phone number must be in international format (e.g., +1234567890)"
+                }
+            ),
+            400,
+        )
+
+    if not validate_email(data_in["email"]):
+        return jsonify({"error": "Invalid email address"}), 400
+
+    # store or update info
+    personal_info.update(
+        {
+            "name": data_in["name"],
+            "phone": data_in["phone"],
+            "email": data_in["email"],
+        }
+    )
+    return jsonify({"message": "Personal info saved successfully"}), 200
+
+
+@app.route("/resume/personal", methods=["GET"])
+def get_personal():
+    """
+    Get personal information
+    """
+    if personal_info:
+        return jsonify(personal_info), 200
+    else:
+        return jsonify({"error": "No personal info found"}), 404
